@@ -1,6 +1,8 @@
 // A Fast, Minimal Memory, Consistent Hash Algorithm https://arxiv.org/pdf/1406.2294
 package hash
 
+import "hash/fnv"
+
 // JumpConsistentHash returns the bucket index for the given key using Jump Consistent Hash algorithm.
 // numBuckets must be > 0
 // the bucket index in the range [0, buckets)
@@ -13,4 +15,19 @@ func JumpConsistentHash(key uint64, numBuckets int32) int32 {
 		j = int64(float64(b+1) * float64(int64(1)<<31) / float64((key>>33)+1))
 	}
 	return int32(b)
+}
+
+func hashString(key string) uint64 {
+	h := fnv.New64a()
+	h.Write([]byte(key))
+	return h.Sum64()
+}
+
+func JumpHashString(key string, numBuckets int32) int32 {
+	if numBuckets <= 0 {
+		return -1
+	}
+
+	keyHash := hashString(key)
+	return JumpConsistentHash(keyHash, numBuckets)
 }
